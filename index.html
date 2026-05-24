@@ -453,31 +453,7 @@ function createSakuraPetal() {
 
 setInterval(createSakuraPetal, 1200);
 
-/* PWA manifest + service worker */
-(function setupPWA() {
-    const manifest = {
-        name: "Sushi Calculator",
-        short_name: "SushiCalc",
-        start_url: ".",
-        display: "standalone",
-        background_color: "#f5f3ef",
-        theme_color: "#d64545",
-        icons: [
-    {
-        src: "icon-512.png",
-        sizes: "512x512",
-        type: "image/png"
-    }
-]
-
-    };
-
-    const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
-    const manifestURL = URL.createObjectURL(blob);
-    const link = document.createElement("link");
-    link.rel = "manifest";
-    link.href = manifestURL;
-    document.head.appendChild(link);
+<link rel="manifest" href="manifest.json">
 
     if ("serviceWorker" in navigator) {
         const swCode = `
