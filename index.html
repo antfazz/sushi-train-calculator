@@ -471,9 +471,8 @@ setInterval(createSakuraPetal, 1200);
         const swURL = URL.createObjectURL(swBlob);
         navigator.serviceWorker.register(swURL);
     }
-})();
 
-document.getElementById("people").value = localStorage.getItem("people") || 1;
+   document.getElementById("people").value = localStorage.getItem("people") || 1;
 renderPlates();
 saveAndCalc();
 </script>
