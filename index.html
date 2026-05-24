@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sushi Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ---------------------------------------------------------
+   THEME VARIABLES (DEFAULT = SAKURA)
+--------------------------------------------------------- */
+:root {
+    --bg: #fdf7fa;
+    --card: transparent;
+    --text: #2a2a2a;
+    --accent: #d6457a;
+    --border: #e3c9d5;
+    --subtle: #a07b8c;
+    --highlight: #b5a9af;
+}
+
+/* BAMBOO THEME */
+body.theme-bamboo {
+    --bg: #f4f7f1;
+    --card: transparent;
+    --text: #2a2f25;
+    --accent: #6a8f3a;
+    --border: #c7d8b8;
+    --subtle: #7a8f6a;
+    --highlight: #87c717;
+}
+
+/* NEON IZAKAYA THEME */
+body.theme-neon {
+    --bg: #0d0d12;
+    --card: transparent;
+    --text: #e8e8ff;
+    --accent: #ff2fd1;
+    --border: #3a3a4d;
+    --subtle: #9a9ab8;
+    --highlight: #1a1a2b;
+}
+
+/* DARK MODE OVERRIDES */
+body.dark {
+    --bg: #1c1b19;
+    --card: transparent;
+    --text: #f2f2f2;
+    --border: #4a4743;
+}
+
+/* ---------------------------------------------------------
+   GLOBAL
+--------------------------------------------------------- */
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans JP", sans-serif;
+    margin: 0;
+    padding: 0 0 70px;
+    font-size: 16px;
+    overflow-x: hidden;
+}
+
+/* ---------------------------------------------------------
+   WOOD-GRAIN HEADER
+--------------------------------------------------------- */
+.header {
+    position: relative;
+    padding: 10px 12px 14px;
+    text-align: center;
+    color: #3b2a1a;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #c79a63 0px,
+            #c79a63 12px,
+            #b8864b 12px,
+            #b8864b 24px
+        );
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.25) 0, transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(0,0,0,0.15) 0, transparent 45%);
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+}
+
+.header h1 {
+    position: relative;
+    margin: 4px 0 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ---------------------------------------------------------
+   MAIN CONTENT
+--------------------------------------------------------- */
+.main {
+    padding: 10px 12px 12px;
+}
+
+.card {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+}
+
+/* ---------------------------------------------------------
+   THEME SELECTOR (compact)
+--------------------------------------------------------- */
+.theme-selector {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.theme-btn {
+    flex: 1;
+    padding: 6px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--highlight);
+}
+
+.theme-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+/* ---------------------------------------------------------
+   GRID LAYOUT
+--------------------------------------------------------- */
+.header-row,
+.plate-row {
+    display: grid;
+    grid-template-columns:
+        26px
+        1fr
+        90px
+        40px
+        80px
+        24px;
+    align-items: center;
+    gap: 6px;
+}
+
+.header-row {
+    font-weight: bold;
+    font-size: 13px;
+    opacity: 0.75;
+    margin-bottom: 6px;
+}
+
+/* ---------------------------------------------------------
+   ELEMENTS
+--------------------------------------------------------- */
+.color-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%; /* now circular */
+    border: 1px solid var(--border);
+    cursor: pointer;
+}
+
+input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 6px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+}
+
+.price-cell {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.subtotal {
+    text-align: right;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--subtle);
+}
+
+.small-btn {
+    padding: 4px 6px;
+    font-size: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button.main-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+/* ---------------------------------------------------------
+   FLOATING TOTAL BAR
+--------------------------------------------------------- */
+.floating-total {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.3);
+    backdrop-filter: blur(6px);
+    border-top: 1px solid var(--border);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    z-index: 50;
+}
+body.theme-neon .floating-total {
+    background: rgba(20, 0, 30, 0.75);
+    box-shadow: 0 -2px 12px rgba(255, 0, 200, 0.4);
+}
+
+/* ---------------------------------------------------------
+   SAKURA PETALS
+--------------------------------------------------------- */
+.sakura-container {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.sakura-petal {
+    position: absolute;
+    width: 10px;
+    height: 14px;
+    background: radial-gradient(circle at 30% 30%, #ffeef5 0, #f8b6d0 40%, #e58aa8 100%);
+    border-radius: 60% 40% 60% 40%;
+    opacity: 0.9;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% { transform: translate3d(0, -10vh, 0) rotateZ(0deg); opacity: 0; }
+    10% { opacity: 0.9; }
+    100% { transform: translate3d(20px, 110vh, 0) rotateZ(360deg); opacity: 0; }
+}
+</style>
+</head>
+
+<body class="theme-sakura">
+
+<div class="header">
+    <h1>🍣 Sushi Train Calculator</h1>
+</div>
+
+<div class="sakura-container" id="sakura"></div>
+
+<div class="main">
+
+    <!-- THEME SELECTOR -->
+    <div class="theme-selector">
+        <div class="theme-btn active" onclick="setTheme('sakura', this)">Sakura</div>
+        <div class="theme-btn" onclick="setTheme('bamboo', this)">Bamboo</div>
+        <div class="theme-btn" onclick="setTheme('neon', this)">Neon</div>
+    </div>
+
+    <div class="card">
+        <div class="header-row">
+            <div></div>
+            <div>Name</div>
+            <div>Price</div>
+            <div>Qty</div>
+            <div>Subtotal</div>
+            <div></div>
+        </div>
+
+        <div id="plateList"></div>
+
+        <button class="main-btn" onclick="addPlate()">+ Add Item</button>
+    </div>
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>People:</span>
+            <input id="people" type="number" min="1" value="1" style="width:80px" oninput="saveAndCalc()">
+        </div>
+    </div>
+
+    <button class="main-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    <button class="main-btn" onclick="resetAll()">Reset All</button>
+
+</div>
+
+<div class="floating-total" id="floatingTotal">
+    <span id="floatTotal">$0.00</span>
+    <span id="floatPerPerson">Per Person: $0.00</span>
+    <span id="floatPlates">Plates: 0</span>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   VERSIONING TO CLEAR OLD QUANTITIES
+--------------------------------------------------------- */
+const APP_VERSION = "v4.0-theme-selector";
+
+if (localStorage.getItem("appVersion") !== APP_VERSION) {
+    localStorage.clear();
+    localStorage.setItem("appVersion", APP_VERSION);
+}
+
+/* ---------------------------------------------------------
+   DATA
+--------------------------------------------------------- */
+let plates = JSON.parse(localStorage.getItem("plates")) || [
+    { name: "Red", price: 4.00, count: 0, color: "#d64545" },
+    { name: "Blue", price: 4.50, count: 0, color: "#4b7bff" },
+    { name: "Silver", price: 5.00, count: 0, color: "#c0c0c0" },
+    { name: "Purple", price: 5.50, count: 0, color: "#a44bff" },
+    { name: "Green", price: 6.00, count: 0, color: "#4bff4b" },
+    { name: "Black", price: 6.50, count: 0, color: "#333333" }
+];
+
+function renderPlates() {
+    const container = document.getElementById("plateList");
+    container.innerHTML = "";
+
+    plates.forEach((p, i) => {
+        const subtotal = (p.price * p.count).toFixed(2);
+
+        container.innerHTML += `
+            <div class="plate-row">
+                <div class="color-swatch" style="background:${p.color}" onclick="openColor(${i})"></div>
+
+                <input type="text" value="${p.name}" onchange="updateName(${i}, this.value)">
+
+                <div class="price-cell">
+                    <span>$</span>
+                    <input type="number" step="0.01" value="${p.price.toFixed(2)}" onchange="updatePrice(${i}, this.value)">
+                </div>
+
+                <input type="number" min="0" value="${p.count}" onchange="updateCount(${i}, this.value)">
+
+                <div class="subtotal">$${subtotal}</div>
+
+                <button class="small-btn" onclick="removePlate(${i})">✕</button>
+
+                <input type="color" id="color${i}" style="display:none" value="${p.color}" onchange="updateColor(${i}, this.value)">
+            </div>
+        `;
+    });
+}
+
+function openColor(i) { document.getElementById("color" + i).click(); }
+function updateName(i, v) { plates[i].name = v; saveAndCalc(); }
+function updatePrice(i, v) { plates[i].price = parseFloat(v) || 0; saveAndCalc(); }
+function updateCount(i, v) { plates[i].count = Math.max(0, parseInt(v) || 0); saveAndCalc(); }
+function updateColor(i, v) { plates[i].color = v; saveAndCalc(); }
+
+function addPlate() {
+    plates.push({ name: "New Item", price: 0.00, count: 0, color: "#cccccc" });
+    saveAndCalc();
+}
+
+function removePlate(i) {
+    plates.splice(i, 1);
+    saveAndCalc();
+}
+
+function saveAndCalc() {
+    localStorage.setItem("plates", JSON.stringify(plates));
+    localStorage.setItem("people", document.getElementById("people").value);
+
+    let total = plates.reduce((s, p) => s + p.price * p.count, 0);
+    let totalPlates = plates.reduce((s, p) => s + p.count, 0);
+    let people = parseInt(document.getElementById("people").value) || 1;
+    let per = total / people;
+
+    document.getElementById("floatTotal").textContent = `$${total.toFixed(2)}`;
+    document.getElementById("floatPerPerson").textContent = `Per Person: $${per.toFixed(2)}`;
+    document.getElementById("floatPlates").textContent = `Plates: ${totalPlates}`;
+
+    renderPlates();
+}
+
+/* ---------------------------------------------------------
+   THEME SELECTOR
+--------------------------------------------------------- */
+function setTheme(theme, btn) {
+    document.body.classList.remove("theme-sakura", "theme-bamboo", "theme-neon");
+    document.body.classList.add("theme-" + theme);
+
+    document.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+}
+
+/* ---------------------------------------------------------
+   DARK MODE
+--------------------------------------------------------- */
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+}
+
+/* ---------------------------------------------------------
+   RESET
+--------------------------------------------------------- */
+function resetAll() {
+    localStorage.clear();
+    localStorage.setItem("appVersion", APP_VERSION);
+    location.reload();
+}
+
+/* Sakura petals */
+function createSakuraPetal() {
+    const container = document.getElementById("sakura");
+    const petal = document.createElement("div");
+    petal.className = "sakura-petal";
+    const startLeft = Math.random() * 100;
+    const duration = 8 + Math.random() * 6;
+    const delay = Math.random() * 5;
+
+    petal.style.left = startLeft + "vw";
+    petal.style.animationDuration = duration + "s";
+    petal.style.animationDelay = delay + "s";
+
+    container.appendChild(petal);
+
+    setTimeout(() => {
+        container.removeChild(petal);
+    }, (duration + delay) * 1000);
+}
+
+setInterval(createSakuraPetal, 1200);
+
+/* PWA manifest + service worker */
+(function setupPWA() {
+    const manifest = {
+        name: "Sushi Calculator",
+        short_name: "SushiCalc",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#f5f3ef",
+        theme_color: "#d64545",
+        icons: []
+    };
+
+    const blob = new Blob([JSON.stringify(manifest)], { type: "application/json" });
+    const manifestURL = URL.createObjectURL(blob);
+    const link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = manifestURL;
+    document.head.appendChild(link);
+
+    if ("serviceWorker" in navigator) {
+        const swCode = `
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open('sushi-cache-v1').then(cache => cache.addAll(['./']))
+                );
+            });
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request).then(resp => resp || fetch(event.request))
+                );
+            });
+        `;
+        const swBlob = new Blob([swCode], { type: "text/javascript" });
+        const swURL = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swURL);
+    }
+})();
+
+document.getElementById("people").value = localStorage.getItem("people") || 1;
+renderPlates();
+saveAndCalc();
+</script>
+
+</body>
+</html>
